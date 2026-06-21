@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#06B6D4</color>
+    <color name="accent_dark">#0891B2</color>
+    <color name="ai_bg">#F5F3FF</color>
+    <color name="ai_border">#C4B5FD</color>
+    <color name="background">#F1F5F9</color>
+    <color name="black">#000000</color>
+    <color name="card_elevation_shadow">#1A000000</color>
+    <color name="condition_excellent">#059669</color>
+    <color name="condition_fair">#D97706</color>
+    <color name="condition_good">#2563EB</color>
+    <color name="condition_poor">#DC2626</color>
+    <color name="divider">#E2E8F0</color>
+    <color name="overlay_dark">#80000000</color>
+    <color name="primary">#4F46E5</color>
+    <color name="primary_dark">#3730A3</color>
+    <color name="primary_light">#818CF8</color>
+    <color name="status_available">#059669</color>
+    <color name="status_reserved">#7C3AED</color>
+    <color name="status_sold">#6B7280</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F8FAFC</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="white">#FFFFFF</color>
+    <dimen name="avatar_size">64dp</dimen>
+    <dimen name="avatar_size_large">80dp</dimen>
+    <dimen name="book_cover_height">160dp</dimen>
+    <dimen name="book_cover_width">110dp</dimen>
+    <dimen name="button_height">52dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="corner_full">100dp</dimen>
+    <dimen name="corner_lg">16dp</dimen>
+    <dimen name="corner_md">12dp</dimen>
+    <dimen name="corner_sm">8dp</dimen>
+    <dimen name="corner_xl">24dp</dimen>
+    <dimen name="input_height">56dp</dimen>
+    <dimen name="spacing_2xl">48dp</dimen>
+    <dimen name="spacing_lg">24dp</dimen>
+    <dimen name="spacing_md">16dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_xl">32dp</dimen>
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="text_2xl">22sp</dimen>
+    <dimen name="text_3xl">28sp</dimen>
+    <dimen name="text_lg">16sp</dimen>
+    <dimen name="text_md">14sp</dimen>
+    <dimen name="text_sm">12sp</dimen>
+    <dimen name="text_xl">18sp</dimen>
+    <dimen name="text_xs">10sp</dimen>
+    <string name="add_listing_title">Add Listing</string>
+    <string name="ai_note">Our AI will analyze your book image and details to suggest a fair price</string>
+    <string name="ai_suggestion_title">🤖 AI Price Suggestion</string>
+    <string name="app_name">Book Loop</string>
+    <string name="btn_add_first">+ Add Your First Listing</string>
+    <string name="btn_ai_suggestion">🤖 Get AI Price Suggestion</string>
+    <string name="btn_call">📞 Call</string>
+    <string name="btn_email">✉️ Email</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_logout">Logout</string>
+    <string name="btn_publish">Publish Listing</string>
+    <string name="btn_register">Create Account</string>
+    <string name="btn_whatsapp">💬 WhatsApp</string>
+    <string name="contact_seller">Contact Seller</string>
+    <string name="filter_all">All</string>
+    <string name="filter_excellent">Excellent</string>
+    <string name="filter_fair">Fair</string>
+    <string name="filter_good">Good</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="gcm_defaultSenderId" translatable="false">153307136242</string>
+    <string name="google_api_key" translatable="false">AIzaSyCQlTN53sh_x9WJh1qqm7OY4XmQCN7ZKUU</string>
+    <string name="google_app_id" translatable="false">1:153307136242:android:675ab11ff9abc1bb8b106b</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCQlTN53sh_x9WJh1qqm7OY4XmQCN7ZKUU</string>
+    <string name="google_storage_bucket" translatable="false">bookloop-group34.firebasestorage.app</string>
+    <string name="have_account">Already have an account? </string>
+    <string name="hint_book_title">Book title</string>
+    <string name="hint_confirm_password">Confirm password</string>
+    <string name="hint_description">Additional description (optional)</string>
+    <string name="hint_edition">Edition (e.g. 3rd Edition)</string>
+    <string name="hint_email">Email address</string>
+    <string name="hint_full_name">Full name</string>
+    <string name="hint_original_price">Original price (Rs.)</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_phone">Phone number</string>
+    <string name="hint_selling_price">Your selling price (Rs.)</string>
+    <string name="hint_subject">Subject / Module</string>
+    <string name="hint_university">University</string>
+    <string name="image_hint">Tap to add book cover photo</string>
+    <string name="login_link">Sign In</string>
+    <string name="login_subtitle">Sign in to your Book Loop account</string>
+    <string name="login_title">Welcome Back</string>
+    <string name="my_listings">My Listings</string>
+    <string name="no_account">Don\'t have an account? </string>
+    <string name="no_listings">No listings found</string>
+    <string name="no_my_listings">You haven\'t listed any books yet</string>
+    <string name="project_id" translatable="false">bookloop-group34</string>
+    <string name="register_link">Sign Up</string>
+    <string name="register_subtitle">Join the Book Loop community</string>
+    <string name="register_title">Create Account</string>
+    <string name="search_hint">Search by title, subject…</string>
+    <string name="tagline">Smart Textbook Exchange</string>
+    <style name="Theme.BookLoop" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorOnSecondary">@color/text_on_primary</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:navigationBarColor">@color/primary_dark</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="Theme.BookLoop.Splash" parent="Theme.BookLoop">
+        <item name="android:windowBackground">@color/primary</item>
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:navigationBarColor">@color/primary</item>
+    </style>
+    <style name="Widget.BookLoop.Button.Accent" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">@color/accent</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/text_md</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">@dimen/corner_lg</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+    </style>
+    <style name="Widget.BookLoop.Button.Danger" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">#DC2626</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">@dimen/corner_lg</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+    <style name="Widget.BookLoop.Button.Outline" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/primary</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textSize">@dimen/text_md</item>
+        <item name="cornerRadius">@dimen/corner_lg</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+    </style>
+    <style name="Widget.BookLoop.Button.Primary" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">@color/primary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/text_lg</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">@dimen/corner_lg</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+    <style name="Widget.BookLoop.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">@dimen/corner_lg</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="cardBackgroundColor">@color/surface</item>
+    </style>
+    <style name="Widget.BookLoop.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/corner_md</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/corner_md</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/corner_md</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/corner_md</item>
+        <item name="boxStrokeColor">@color/primary</item>
+        <item name="hintTextColor">@color/primary</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+    </style>
+</resources>

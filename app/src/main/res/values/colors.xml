@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Brand Colors -->
+    <color name="primary">#4F46E5</color>
+    <color name="primary_dark">#3730A3</color>
+    <color name="primary_light">#818CF8</color>
+    <color name="accent">#06B6D4</color>
+    <color name="accent_dark">#0891B2</color>
+
+    <!-- Background Colors -->
+    <color name="background">#F1F5F9</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F8FAFC</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
+    <!-- Condition Badge Colors -->
+    <color name="condition_excellent">#059669</color>
+    <color name="condition_good">#2563EB</color>
+    <color name="condition_fair">#D97706</color>
+    <color name="condition_poor">#DC2626</color>
+
+    <!-- Status Badge Colors -->
+    <color name="status_available">#059669</color>
+    <color name="status_reserved">#7C3AED</color>
+    <color name="status_sold">#6B7280</color>
+
+    <!-- Other -->
+    <color name="divider">#E2E8F0</color>
+    <color name="card_elevation_shadow">#1A000000</color>
+    <color name="overlay_dark">#80000000</color>
+    <color name="ai_bg">#F5F3FF</color>
+    <color name="ai_border">#C4B5FD</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>

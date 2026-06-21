@@ -1,0 +1,25 @@
+# Default ignored files
+# Built application files
+*.apk
+*.aab
+*.ap_
+
+# Build output
+build/
+.gradle/
+
+# Android Studio files
+.idea/
+*.iml
+.idea/workspace.xml
+.idea/libraries
+
+# Local machine settings
+local.properties
+
+# Firebase credentials — NEVER push this
+google-services.json
+
+# OS files
+.DS_Store
+Thumbs.db
