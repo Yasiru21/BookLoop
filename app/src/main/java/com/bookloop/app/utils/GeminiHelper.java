@@ -1,5 +1,6 @@
 package com.bookloop.app.utils;
 
+import com.bookloop.app.BuildConfig;
 import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
@@ -41,7 +42,7 @@ public class GeminiHelper {
     private static final String TAG = "GeminiHelper";
 
     // *** IMPORTANT: Replace with your actual Gemini API key from https://aistudio.google.com ***
-    private static final String API_KEY = "AQ.Ab8RN6JoBMJ3Mf6qKZ6ynvF0KE6rTvWTEbK8l1upwkC_8gG3Lw";
+    private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
 
     // Using gemini-2.0-flash — current stable model
     private static final String API_URL =
