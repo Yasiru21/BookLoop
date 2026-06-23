@@ -1,6 +1,5 @@
 package com.bookloop.app.utils;
 
-import com.bookloop.app.BuildConfig;
 import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
@@ -20,37 +19,15 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-/**
- * GeminiHelper — Integrates with the Google Gemini Vision API to provide
- * AI-based textbook price suggestions.
- *
- * Purpose: Analyze a textbook cover image along with seller-provided details
- * to recommend a fair second-hand selling price range.
- *
- * How the AI works:
- * - Sends the textbook image (base64-encoded) + structured text prompt to
- * the Gemini 1.5 Flash model via the Generative Language REST API.
- * - Gemini analyzes visible condition indicators (cover damage, stains, wear)
- * combined with metadata (original price, edition, subject) to return a
- * condition summary and a recommended LKR price range.
- *
- * Inputs: Bitmap (book image), originalPrice, edition, subject, condition
- * Outputs: String containing "CONDITION: ..." and "PRICE RANGE: Rs. X – Rs. Y"
- */
 public class GeminiHelper {
 
     private static final String TAG = "GeminiHelper";
-
-    // *** IMPORTANT: Replace with your actual Gemini API key from https://aistudio.google.com ***
-    private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
-
-    // Using gemini-2.0-flash — current stable model
-    private static final String API_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    private static final String API_KEY = "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";
+    private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
+    private static final String MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
 
     public interface GeminiCallback {
         void onSuccess(String result);
-
         void onError(String errorMessage);
     }
 
@@ -60,35 +37,17 @@ public class GeminiHelper {
             .writeTimeout(30, TimeUnit.SECONDS)
             .build();
 
-    /**
-     * Sends the book image and details to Gemini for price suggestion.
-     *
-     * API Integration Process:
-     * 1. Compress and base64-encode the bitmap
-     * 2. Build a multimodal JSON request (image + text parts)
-     * 3. POST to Gemini REST endpoint
-     * 4. Parse the text response and return via callback
-     *
-     * @param bookImage     Bitmap of the textbook cover
-     * @param originalPrice Original price paid (as String, e.g. "2500")
-     * @param edition       Edition number (e.g. "3rd Edition")
-     * @param subject       Subject or module name
-     * @param condition     Seller's self-assessed condition
-     * @param callback      Callback for success/failure results
-     */
     public static void getPriceSuggestion(Bitmap bookImage,
-            String originalPrice,
-            String edition,
-            String subject,
-            String condition,
-            GeminiCallback callback) {
+                                          String originalPrice,
+                                          String edition,
+                                          String subject,
+                                          String condition,
+                                          GeminiCallback callback) {
 
-        // Step 1: Compress bitmap → base64
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bookImage.compress(Bitmap.CompressFormat.JPEG, 75, baos);
         String base64Image = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
 
-        // Step 2: Build the prompt
         String textPrompt = "You are a second-hand textbook pricing advisor for Sri Lankan university students.\n\n"
                 + "Analyze the provided textbook cover image and the details below to suggest a fair resale price in Sri Lankan Rupees (LKR).\n\n"
                 + "Book Details Provided by Seller:\n"
@@ -104,42 +63,43 @@ public class GeminiHelper {
                 + "CONDITION: [brief assessment of visible book condition]\n"
                 + "PRICE RANGE: Rs. [minimum] - Rs. [maximum]";
 
-        // Step 3: Build JSON request body
         try {
+            // Build image content
+            JSONObject imageUrl = new JSONObject();
+            imageUrl.put("url", "data:image/jpeg;base64," + base64Image);
+
+            JSONObject imageContent = new JSONObject();
+            imageContent.put("type", "image_url");
+            imageContent.put("image_url", imageUrl);
+
+            // Build text content
+            JSONObject textContent = new JSONObject();
+            textContent.put("type", "text");
+            textContent.put("text", textPrompt);
+
+            // Combine into message
+            JSONArray contentArray = new JSONArray();
+            contentArray.put(imageContent);
+            contentArray.put(textContent);
+
+            JSONObject userMessage = new JSONObject();
+            userMessage.put("role", "user");
+            userMessage.put("content", contentArray);
+
+            JSONArray messages = new JSONArray();
+            messages.put(userMessage);
+
+            // Build request body
             JSONObject requestJson = new JSONObject();
-            JSONArray contents = new JSONArray();
-            JSONObject content = new JSONObject();
-            JSONArray parts = new JSONArray();
+            requestJson.put("model", MODEL);
+            requestJson.put("messages", messages);
+            requestJson.put("max_tokens", 256);
+            requestJson.put("temperature", 0.3);
 
-            // Text part
-            JSONObject textPart = new JSONObject();
-            textPart.put("text", textPrompt);
-            parts.put(textPart);
-
-            // Image part
-            JSONObject imagePart = new JSONObject();
-            JSONObject inlineData = new JSONObject();
-            inlineData.put("mime_type", "image/jpeg");
-            inlineData.put("data", base64Image);
-            imagePart.put("inline_data", inlineData);
-            parts.put(imagePart);
-
-            content.put("parts", parts);
-            contents.put(content);
-            requestJson.put("contents", contents);
-
-            // Safety and generation config
-            JSONObject generationConfig = new JSONObject();
-            generationConfig.put("temperature", 0.3);
-            generationConfig.put("maxOutputTokens", 256);
-            requestJson.put("generationConfig", generationConfig);
-
-            // Step 4: Execute HTTP request
-            // AIza format keys work via the URL parameter or x-goog-api-key header
             Request request = new Request.Builder()
-                    .url(API_URL + "?key=" + API_KEY)
+                    .url(API_URL)
                     .addHeader("Content-Type", "application/json")
-                    .addHeader("x-goog-api-key", API_KEY)
+                    .addHeader("Authorization", "Bearer " + API_KEY)
                     .post(RequestBody.create(
                             requestJson.toString(),
                             MediaType.parse("application/json; charset=utf-8")))
@@ -148,7 +108,7 @@ public class GeminiHelper {
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    Log.e(TAG, "Gemini API call failed", e);
+                    Log.e(TAG, "Groq API call failed", e);
                     callback.onError("Network error: " + e.getMessage());
                 }
 
@@ -159,24 +119,22 @@ public class GeminiHelper {
                         try {
                             JSONObject json = new JSONObject(responseBody);
                             String text = json
-                                    .getJSONArray("candidates")
+                                    .getJSONArray("choices")
                                     .getJSONObject(0)
-                                    .getJSONObject("content")
-                                    .getJSONArray("parts")
-                                    .getJSONObject(0)
-                                    .getString("text");
+                                    .getJSONObject("message")
+                                    .getString("content");
                             callback.onSuccess(text.trim());
                         } catch (Exception e) {
                             Log.e(TAG, "Parse error: " + responseBody, e);
                             callback.onError("Could not parse AI response. Please try again.");
                         }
                     } else {
-                        Log.e(TAG, "Gemini API error " + response.code() + ": " + responseBody);
+                        Log.e(TAG, "Groq API error " + response.code() + ": " + responseBody);
                         String errorMsg;
                         switch (response.code()) {
-                            case 429: errorMsg = "Rate limit reached. Please wait a moment and try again."; break;
-                            case 403: errorMsg = "API key permission denied. Check your key."; break;
-                            case 404: errorMsg = "AI model not found. Check API configuration."; break;
+                            case 429: errorMsg = "Rate limit reached. Please wait and try again."; break;
+                            case 403: errorMsg = "API key permission denied."; break;
+                            case 404: errorMsg = "AI model not found."; break;
                             default:  errorMsg = "AI service error (code " + response.code() + "). Try again."; break;
                         }
                         callback.onError(errorMsg);
