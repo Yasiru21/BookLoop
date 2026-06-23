@@ -135,11 +135,11 @@ public class GeminiHelper {
             requestJson.put("generationConfig", generationConfig);
 
             // Step 4: Execute HTTP request
-            // AQ. format keys work as Bearer tokens in the Authorization header
+            // AIza format keys work via the URL parameter or x-goog-api-key header
             Request request = new Request.Builder()
-                    .url(API_URL)
+                    .url(API_URL + "?key=" + API_KEY)
                     .addHeader("Content-Type", "application/json")
-                    .addHeader("Authorization", "Bearer " + API_KEY)
+                    .addHeader("x-goog-api-key", API_KEY)
                     .post(RequestBody.create(
                             requestJson.toString(),
                             MediaType.parse("application/json; charset=utf-8")))
