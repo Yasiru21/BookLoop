@@ -2,142 +2,73 @@ package com.bookloop.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.fragment.app.Fragment;
 
-import com.bookloop.app.adapters.BookAdapter;
+import com.bookloop.app.R;
 import com.bookloop.app.databinding.ActivityMainBinding;
-import com.bookloop.app.models.Book;
-import com.bookloop.app.utils.FirebaseHelper;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.bookloop.app.fragments.HomeFragment;
+import com.bookloop.app.fragments.ProfileFragment;
+import com.bookloop.app.fragments.SearchFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private BookAdapter adapter;
-    private List<Book> allBooks = new ArrayList<>();
-    private List<Book> filteredBooks = new ArrayList<>();
-    private String activeConditionFilter = "All";
+    
+    // Fragments
+    private final HomeFragment homeFragment = new HomeFragment();
+    private final SearchFragment searchFragment = new SearchFragment();
+    private final ProfileFragment profileFragment = new ProfileFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Apply saved theme
+        android.content.SharedPreferences sharedPrefs = getSharedPreferences("BookLoopPrefs", android.content.Context.MODE_PRIVATE);
+        int currentTheme = sharedPrefs.getInt("theme_mode", androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(currentTheme);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setupRecyclerView();
-        setupSearch();
-        setupFilters();
         setupBottomNav();
-        loadBooks();
-
-        binding.swipeRefresh.setOnRefreshListener(this::loadBooks);
-    }
-
-    private void setupRecyclerView() {
-        adapter = new BookAdapter(filteredBooks, book -> {
-            Intent intent = new Intent(this, ListingDetailActivity.class);
-            intent.putExtra("book_id", book.getId());
-            startActivity(intent);
-        });
-        binding.rvBooks.setLayoutManager(new LinearLayoutManager(this));
-        binding.rvBooks.setAdapter(adapter);
-    }
-
-    private void setupSearch() {
-        binding.etSearch.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                applyFilters(s.toString());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
-    }
-
-    private void setupFilters() {
-        // Condition filter chips
-        binding.chipAll.setOnClickListener(v -> { activeConditionFilter = "All"; applyFilters(binding.etSearch.getText().toString()); });
-        binding.chipExcellent.setOnClickListener(v -> { activeConditionFilter = "Excellent"; applyFilters(binding.etSearch.getText().toString()); });
-        binding.chipGood.setOnClickListener(v -> { activeConditionFilter = "Good"; applyFilters(binding.etSearch.getText().toString()); });
-        binding.chipFair.setOnClickListener(v -> { activeConditionFilter = "Fair"; applyFilters(binding.etSearch.getText().toString()); });
-    }
-
-    private void applyFilters(String query) {
-        filteredBooks.clear();
-        String lowerQuery = query.toLowerCase().trim();
-        for (Book book : allBooks) {
-            boolean matchesSearch = lowerQuery.isEmpty()
-                    || book.getTitle().toLowerCase().contains(lowerQuery)
-                    || book.getSubject().toLowerCase().contains(lowerQuery)
-                    || book.getSellerName().toLowerCase().contains(lowerQuery);
-            boolean matchesCondition = activeConditionFilter.equals("All")
-                    || book.getCondition().equals(activeConditionFilter);
-            if (matchesSearch && matchesCondition) {
-                filteredBooks.add(book);
-            }
+        
+        // Load default fragment
+        if (savedInstanceState == null) {
+            loadFragment(homeFragment);
+            binding.bottomNavigation.setSelectedItemId(R.id.nav_home);
         }
-        adapter.notifyDataSetChanged();
-
-        // Show/hide empty state
-        boolean isEmpty = filteredBooks.isEmpty();
-        binding.tvEmptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-        binding.rvBooks.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-    }
-
-    private void loadBooks() {
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.tvEmptyState.setVisibility(View.GONE);
-
-        FirebaseHelper.getAllBooksQuery()
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    allBooks.clear();
-                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        Book book = doc.toObject(Book.class);
-                        if (book != null) {
-                            book.setId(doc.getId());
-                            allBooks.add(book);
-                        }
-                    }
-                    applyFilters(binding.etSearch.getText().toString());
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.swipeRefresh.setRefreshing(false);
-                    binding.tvListingCount.setText(allBooks.size() + " listings available");
-                })
-                .addOnFailureListener(e -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.swipeRefresh.setRefreshing(false);
-                    Toast.makeText(this, "Failed to load listings: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
     }
 
     private void setupBottomNav() {
-        binding.fabAddListing.setOnClickListener(v ->
-                startActivity(new Intent(this, AddListingActivity.class)));
-
-        binding.btnProfile.setOnClickListener(v ->
-                startActivity(new Intent(this, ProfileActivity.class)));
-
-        binding.btnLogout.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            startActivity(new Intent(this, LoginActivity.class));
-            finishAffinity();
+        binding.bottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            
+            if (itemId == R.id.nav_home) {
+                loadFragment(homeFragment);
+                return true;
+            } else if (itemId == R.id.nav_search) {
+                loadFragment(searchFragment);
+                return true;
+            } else if (itemId == R.id.nav_add) {
+                // Launch Add Listing Activity, don't change fragment
+                startActivity(new Intent(this, AddListingActivity.class));
+                return false; // Return false so the nav item isn't visibly selected
+            } else if (itemId == R.id.nav_profile) {
+                loadFragment(profileFragment);
+                return true;
+            }
+            
+            return false;
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadBooks(); // Refresh when returning from AddListing/Detail
+    private void loadFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
     }
 }

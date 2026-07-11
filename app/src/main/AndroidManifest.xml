@@ -51,8 +51,9 @@
             android:exported="false" />
 
         <activity
-            android:name=".activities.ProfileActivity"
-            android:exported="false" />
+            android:name=".activities.EditProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
     </application>
 

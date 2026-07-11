@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Primary Brand Colors -->
-    <color name="primary">#4F46E5</color>
-    <color name="primary_dark">#3730A3</color>
-    <color name="primary_light">#818CF8</color>
-    <color name="accent">#06B6D4</color>
-    <color name="accent_dark">#0891B2</color>
+    <color name="primary">#1E3A8A</color>
+    <color name="primary_dark">#172554</color>
+    <color name="primary_light">#1D4ED8</color>
+    <color name="accent">#0369A1</color>
+    <color name="accent_dark">#075985</color>
 
     <!-- Background Colors -->
     <color name="background">#F1F5F9</color>
@@ -33,8 +33,8 @@
     <color name="divider">#E2E8F0</color>
     <color name="card_elevation_shadow">#1A000000</color>
     <color name="overlay_dark">#80000000</color>
-    <color name="ai_bg">#F5F3FF</color>
-    <color name="ai_border">#C4B5FD</color>
+    <color name="ai_bg">#EFF6FF</color>
+    <color name="ai_border">#BFDBFE</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 </resources>
