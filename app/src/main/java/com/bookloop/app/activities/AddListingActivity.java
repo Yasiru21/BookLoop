@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.bookloop.app.databinding.ActivityAddListingBinding;
 import com.bookloop.app.models.AppUser;
@@ -26,18 +28,23 @@ import com.bookloop.app.utils.FirebaseHelper;
 import com.bookloop.app.utils.GeminiHelper;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class AddListingActivity extends AppCompatActivity {
 
     private ActivityAddListingBinding binding;
-    private Uri selectedImageUri;
-    private Bitmap selectedBitmap;
+    private Uri selectedImageUri;   // Always set when an image is chosen (gallery or camera)
+    private Bitmap selectedBitmap;  // Decoded bitmap used for AI price suggestion
+    private Uri cameraPhotoUri;     // Temp URI for the camera output file
     private AppUser currentUser;
 
     private final String[] CONDITIONS = {"Excellent", "Good", "Fair", "Poor"};
 
-    // Image picker launchers
+    // ── Activity result launchers ──────────────────────────────────────────────
+
+    /** Gallery picker — returns a content URI directly */
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -46,24 +53,38 @@ public class AddListingActivity extends AppCompatActivity {
                 }
             });
 
+    /**
+     * Camera launcher — photo is written to {@link #cameraPhotoUri} (full resolution).
+     * On success we just promote cameraPhotoUri → selectedImageUri so the upload
+     * path in publishListing() works identically to the gallery path.
+     */
     private final ActivityResultLauncher<Intent> cameraLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    selectedBitmap = (Bitmap) result.getData().getExtras().get("data");
-                    binding.ivBookCover.setImageBitmap(selectedBitmap);
-                    binding.tvImageHint.setVisibility(View.GONE);
+                if (result.getResultCode() == RESULT_OK && cameraPhotoUri != null) {
+                    selectedImageUri = cameraPhotoUri;
+                    loadPreviewImage();
                 }
             });
 
-    private final ActivityResultLauncher<String[]> permissionLauncher =
+    /** Gallery storage permission request */
+    private final ActivityResultLauncher<String[]> galleryPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-                Boolean granted = result.getOrDefault(
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                                ? Manifest.permission.READ_MEDIA_IMAGES
-                                : Manifest.permission.READ_EXTERNAL_STORAGE, false);
+                String perm = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                        ? Manifest.permission.READ_MEDIA_IMAGES
+                        : Manifest.permission.READ_EXTERNAL_STORAGE;
+                Boolean granted = result.getOrDefault(perm, false);
                 if (Boolean.TRUE.equals(granted)) openGallery();
                 else Toast.makeText(this, "Storage permission required", Toast.LENGTH_SHORT).show();
             });
+
+    /** Camera permission request */
+    private final ActivityResultLauncher<String> cameraPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) openCamera();
+                else Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show();
+            });
+
+    // ── Lifecycle ──────────────────────────────────────────────────────────────
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +96,13 @@ public class AddListingActivity extends AppCompatActivity {
         loadCurrentUser();
 
         binding.ivBookCover.setOnClickListener(v -> showImagePickerDialog());
+        binding.tvImageHint.setOnClickListener(v -> showImagePickerDialog());
         binding.btnGetAiSuggestion.setOnClickListener(v -> getAiPriceSuggestion());
         binding.btnPublishListing.setOnClickListener(v -> publishListing());
         binding.btnBack.setOnClickListener(v -> finish());
     }
+
+    // ── Setup ──────────────────────────────────────────────────────────────────
 
     private void setupConditionSpinner() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
@@ -94,30 +118,68 @@ public class AddListingActivity extends AppCompatActivity {
                 e -> Toast.makeText(this, "Could not load profile", Toast.LENGTH_SHORT).show());
     }
 
+    // ── Image picker ───────────────────────────────────────────────────────────
+
     private void showImagePickerDialog() {
-        String[] options = {"Take Photo", "Choose from Gallery"};
+        String[] options = {"📷  Take Photo", "🖼️  Choose from Gallery"};
         new AlertDialog.Builder(this)
                 .setTitle("Select Book Image")
                 .setItems(options, (dialog, which) -> {
-                    if (which == 0) openCamera();
-                    else checkPermissionAndOpenGallery();
+                    if (which == 0) checkCameraPermissionAndOpen();
+                    else            checkGalleryPermissionAndOpen();
                 })
                 .show();
     }
 
-    private void openCamera() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraLauncher.launch(intent);
+    private void checkCameraPermissionAndOpen() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            openCamera();
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
     }
 
-    private void checkPermissionAndOpenGallery() {
+    private void checkGalleryPermissionAndOpen() {
         String permission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 ? Manifest.permission.READ_MEDIA_IMAGES
                 : Manifest.permission.READ_EXTERNAL_STORAGE;
-        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, permission)
+                == PackageManager.PERMISSION_GRANTED) {
             openGallery();
         } else {
-            permissionLauncher.launch(new String[]{permission});
+            galleryPermissionLauncher.launch(new String[]{permission});
+        }
+    }
+
+    /**
+     * Opens the camera with a full-resolution output URI.
+     * The photo is saved to a temp file in getCacheDir() via FileProvider so it
+     * can be shared with the system camera app (required on Android 7+).
+     */
+    private void openCamera() {
+        try {
+            // Create a temp file to hold the full-res photo
+            File photoFile = File.createTempFile("book_cover_", ".jpg", getCacheDir());
+            cameraPhotoUri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    photoFile
+            );
+
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraPhotoUri);
+            // Grant the camera app write access to our URI
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            // Only launch if a camera app is available
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                cameraLauncher.launch(intent);
+            } else {
+                Toast.makeText(this, "No camera app found", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            Toast.makeText(this, "Could not create temp file for camera", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -126,20 +188,24 @@ public class AddListingActivity extends AppCompatActivity {
         galleryLauncher.launch(intent);
     }
 
+    /**
+     * Decodes {@link #selectedImageUri} into {@link #selectedBitmap} and shows a
+     * preview. Uses BitmapFactory with an InputStream to avoid the deprecated
+     * MediaStore.Images.Media.getBitmap() API.
+     */
     private void loadPreviewImage() {
-        try {
-            selectedBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+        if (selectedImageUri == null) return;
+        binding.tvImageHint.setVisibility(View.GONE);
+        try (InputStream is = getContentResolver().openInputStream(selectedImageUri)) {
+            selectedBitmap = BitmapFactory.decodeStream(is);
             binding.ivBookCover.setImageBitmap(selectedBitmap);
-            binding.tvImageHint.setVisibility(View.GONE);
         } catch (IOException e) {
             Toast.makeText(this, "Could not load image", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**
-     * AI Price Suggestion — calls Gemini Vision API with image + book details.
-     * Shows a loading state and populates the selling price field with the AI's recommendation.
-     */
+    // ── AI Price Suggestion ────────────────────────────────────────────────────
+
     private void getAiPriceSuggestion() {
         if (selectedBitmap == null) {
             Toast.makeText(this, "Please upload a book cover image first", Toast.LENGTH_SHORT).show();
@@ -167,8 +233,6 @@ public class AddListingActivity extends AppCompatActivity {
                             setAiLoading(false);
                             binding.tvAiResult.setVisibility(View.VISIBLE);
                             binding.tvAiResult.setText("🤖 AI Suggestion:\n" + result);
-
-                            // Auto-fill selling price from AI suggestion
                             extractAndFillPrice(result);
                         });
                     }
@@ -184,16 +248,13 @@ public class AddListingActivity extends AppCompatActivity {
     }
 
     private void extractAndFillPrice(String aiResult) {
-        // Try to extract the minimum price from "PRICE RANGE: Rs. X - Rs. Y"
         try {
             String lower = aiResult.toLowerCase();
             int priceIdx = lower.indexOf("price range:");
             if (priceIdx >= 0) {
                 String sub = aiResult.substring(priceIdx + 12).trim();
                 sub = sub.replaceAll("[Rrs.\\s]", "").split("-")[0].replaceAll("[^0-9]", "").trim();
-                if (!sub.isEmpty()) {
-                    binding.etSellingPrice.setText(sub);
-                }
+                if (!sub.isEmpty()) binding.etSellingPrice.setText(sub);
             }
         } catch (Exception ignored) {}
     }
@@ -201,8 +262,10 @@ public class AddListingActivity extends AppCompatActivity {
     private void setAiLoading(boolean loading) {
         binding.btnGetAiSuggestion.setEnabled(!loading);
         binding.aiProgressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        binding.btnGetAiSuggestion.setText(loading ? "Analyzing..." : "🤖 Get AI Price Suggestion");
+        binding.btnGetAiSuggestion.setText(loading ? "Analyzing…" : "🤖  Get AI Price Suggestion");
     }
+
+    // ── Publish Listing ────────────────────────────────────────────────────────
 
     private void publishListing() {
         String title        = binding.etTitle.getText().toString().trim();
@@ -214,12 +277,13 @@ public class AddListingActivity extends AppCompatActivity {
         String description  = binding.etDescription.getText().toString().trim();
 
         // Validation
-        if (TextUtils.isEmpty(title)) { binding.etTitle.setError("Title required"); binding.etTitle.requestFocus(); return; }
-        if (TextUtils.isEmpty(subject)) { binding.etSubject.setError("Subject required"); binding.etSubject.requestFocus(); return; }
+        if (TextUtils.isEmpty(title))        { binding.etTitle.setError("Title required");                binding.etTitle.requestFocus();          return; }
+        if (TextUtils.isEmpty(subject))      { binding.etSubject.setError("Subject required");            binding.etSubject.requestFocus();        return; }
         if (TextUtils.isEmpty(origPriceStr)) { binding.etOriginalPrice.setError("Original price required"); binding.etOriginalPrice.requestFocus(); return; }
-        if (TextUtils.isEmpty(sellPriceStr)) { binding.etSellingPrice.setError("Selling price required"); binding.etSellingPrice.requestFocus(); return; }
-        if (selectedImageUri == null && selectedBitmap == null) {
-            Toast.makeText(this, "Please add a book cover photo", Toast.LENGTH_SHORT).show(); return;
+        if (TextUtils.isEmpty(sellPriceStr)) { binding.etSellingPrice.setError("Selling price required"); binding.etSellingPrice.requestFocus();   return; }
+        if (selectedImageUri == null) {
+            Toast.makeText(this, "Please add a book cover photo", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         double originalPrice, sellingPrice;
@@ -227,42 +291,37 @@ public class AddListingActivity extends AppCompatActivity {
             originalPrice = Double.parseDouble(origPriceStr);
             sellingPrice  = Double.parseDouble(sellPriceStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Invalid price format", Toast.LENGTH_SHORT).show(); return;
+            Toast.makeText(this, "Invalid price format", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         setPublishLoading(true);
 
-        String sellerName  = currentUser != null ? currentUser.getName() : "Unknown";
+        String sellerName  = currentUser != null ? currentUser.getName()  : "Unknown";
         String sellerEmail = currentUser != null ? currentUser.getEmail() : "";
         String sellerPhone = currentUser != null ? currentUser.getPhone() : "";
         String sellerId    = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        if (selectedImageUri != null) {
-            // Upload image to Firebase Storage, then save book
-            FirebaseHelper.uploadBookImage(selectedImageUri, new FirebaseHelper.OnUploadCallback() {
-                @Override
-                public void onSuccess(String downloadUrl) {
-                    saveBook(title, subject, edition, condition, originalPrice, sellingPrice,
-                            downloadUrl, sellerId, sellerName, sellerEmail, sellerPhone, description);
-                }
-                @Override
-                public void onError(String error) {
-                    runOnUiThread(() -> {
-                        setPublishLoading(false);
-                        Toast.makeText(AddListingActivity.this,
-                                "Image upload failed: " + error, Toast.LENGTH_LONG).show();
-                    });
-                }
-                @Override
-                public void onProgress(int percent) {
-                    runOnUiThread(() -> binding.uploadProgressBar.setProgress(percent));
-                }
-            });
-        } else {
-            // No URI (came from camera), save without image URL for now
-            saveBook(title, subject, edition, condition, originalPrice, sellingPrice,
-                    "", sellerId, sellerName, sellerEmail, sellerPhone, description);
-        }
+        // Upload image (both gallery URI and camera URI work the same way now)
+        FirebaseHelper.uploadBookImage(selectedImageUri, new FirebaseHelper.OnUploadCallback() {
+            @Override
+            public void onSuccess(String downloadUrl) {
+                saveBook(title, subject, edition, condition, originalPrice, sellingPrice,
+                        downloadUrl, sellerId, sellerName, sellerEmail, sellerPhone, description);
+            }
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    setPublishLoading(false);
+                    Toast.makeText(AddListingActivity.this,
+                            "Image upload failed: " + error, Toast.LENGTH_LONG).show();
+                });
+            }
+            @Override
+            public void onProgress(int percent) {
+                runOnUiThread(() -> binding.uploadProgressBar.setProgress(percent));
+            }
+        });
     }
 
     private void saveBook(String title, String subject, String edition, String condition,
@@ -272,7 +331,6 @@ public class AddListingActivity extends AppCompatActivity {
         Book book = new Book(title, subject, edition, condition, originalPrice,
                 sellingPrice, imageUrl, sellerId, sellerName, sellerEmail, sellerPhone, description);
 
-        // Store AI suggestion if available
         String aiText = binding.tvAiResult.getText().toString();
         if (!aiText.isEmpty()) book.setAiPriceSuggestion(aiText);
 
@@ -300,6 +358,6 @@ public class AddListingActivity extends AppCompatActivity {
     private void setPublishLoading(boolean loading) {
         binding.btnPublishListing.setEnabled(!loading);
         binding.uploadProgressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        binding.btnPublishListing.setText(loading ? "Publishing..." : "Publish Listing");
+        binding.btnPublishListing.setText(loading ? "Publishing…" : "Publish Listing");
     }
 }

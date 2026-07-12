@@ -9,6 +9,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.bookloop.app.databinding.ActivityListingDetailBinding;
 import com.bookloop.app.models.Book;
@@ -26,8 +29,24 @@ public class ListingDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Allow content to draw edge-to-edge so we can handle insets ourselves
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         binding = ActivityListingDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Dynamically pad the ScrollView so the Delete button is never hidden
+        // behind the system navigation bar (works for both gesture & 3-button nav)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.scrollView, (v, insets) -> {
+            int navBarHeight = insets
+                    .getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    v.getPaddingTop(),
+                    v.getPaddingRight(),
+                    navBarHeight + 24 // 24dp breathing room on top of the nav bar
+            );
+            return insets;
+        });
 
         bookId = getIntent().getStringExtra("book_id");
         if (bookId == null) { finish(); return; }

@@ -11,13 +11,17 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_gravity="center"
-        android:indeterminateTint="@color/primary"
+        android:indeterminateTint="@color/primary_light"
         android:visibility="gone"
         android:layout_marginTop="100dp" />
 
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -169,7 +173,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:text="Rs. 2,500"
-                                android:textColor="@color/primary"
+                                android:textColor="@color/primary_light"
                                 android:textSize="26sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -240,7 +244,7 @@
                 android:layout_marginTop="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="#F5F3FF"
+                app:cardBackgroundColor="@color/ai_bg"
                 android:visibility="gone">
 
                 <LinearLayout
@@ -253,7 +257,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🤖 AI Price Suggestion"
-                        android:textColor="@color/primary"
+                        android:textColor="@color/primary_light"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -326,37 +330,61 @@
                         android:layout_marginTop="10dp"
                         android:orientation="horizontal">
 
+                        <!-- CALL — green -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnCallSeller"
                             android:layout_width="0dp"
-                            android:layout_height="44dp"
+                            android:layout_height="52dp"
                             android:layout_weight="1"
-                            android:text="📞 Call"
-                            android:textSize="12sp"
-                            app:backgroundTint="#4F46E5"
+                            android:text="📞 CALL"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.04"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="#16A34A"
+                            app:cornerRadius="50dp"
+                            app:elevation="4dp"
                             style="@style/Widget.BookLoop.Button.Primary" />
 
+                        <!-- EMAIL — indigo blue (filled, matching the others) -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnEmailSeller"
                             android:layout_width="0dp"
-                            android:layout_height="44dp"
+                            android:layout_height="52dp"
                             android:layout_weight="1"
                             android:layout_marginStart="8dp"
-                            android:text="✉️ Email"
-                            android:textSize="12sp"
-                            android:textColor="#4F46E5"
-                            app:strokeColor="#4F46E5"
-                            style="@style/Widget.BookLoop.Button.Outline" />
+                            android:text="✉ EMAIL"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.04"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="#4F46E5"
+                            app:cornerRadius="50dp"
+                            app:elevation="4dp"
+                            style="@style/Widget.BookLoop.Button.Primary" />
 
+                        <!-- CHAT — WhatsApp green with text label -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnWhatsapp"
                             android:layout_width="0dp"
-                            android:layout_height="44dp"
+                            android:layout_height="52dp"
                             android:layout_weight="1"
                             android:layout_marginStart="8dp"
-                            android:text="💬"
-                            app:backgroundTint="#06B6D4"
-                            style="@style/Widget.BookLoop.Button.Accent" />
+                            android:text="💬 CHAT"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.04"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="#25D366"
+                            app:cornerRadius="50dp"
+                            app:elevation="4dp"
+                            style="@style/Widget.BookLoop.Button.Primary" />
 
                     </LinearLayout>
                 </LinearLayout>
@@ -387,48 +415,61 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
+                    <!-- AVAILABLE — fresh teal-green -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnMarkAvailable"
                         android:layout_width="0dp"
-                        android:layout_height="44dp"
+                        android:layout_height="52dp"
                         android:layout_weight="1"
-                        android:text="Available"
-                        android:textSize="11sp"
-                        android:textColor="#4F46E5"
-                        app:strokeColor="#4F46E5"
-                        style="@style/Widget.BookLoop.Button.Outline" />
+                        android:text="✅ AVAILABLE"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#0D9488"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        style="@style/Widget.BookLoop.Button.Primary" />
 
+                    <!-- RESERVED — rich amber gold -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnMarkReserved"
                         android:layout_width="0dp"
-                        android:layout_height="44dp"
+                        android:layout_height="52dp"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
-                        android:text="Reserved"
-                        android:textSize="11sp"
-                        app:backgroundTint="#06B6D4"
-                        style="@style/Widget.BookLoop.Button.Accent" />
+                        android:text="🔒 RESERVED"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#D97706"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        style="@style/Widget.BookLoop.Button.Primary" />
 
+                    <!-- SOLD — deep slate purple -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnMarkSold"
                         android:layout_width="0dp"
-                        android:layout_height="44dp"
+                        android:layout_height="52dp"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
-                        android:text="Sold"
-                        android:textSize="11sp"
-                        app:backgroundTint="#4F46E5"
+                        android:text="🏷 SOLD"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#7C3AED"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         style="@style/Widget.BookLoop.Button.Primary" />
 
                 </LinearLayout>
 
+                <!-- DELETE — bold crimson red, full-width -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDeleteListing"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="10dp"
-                    android:text="🗑 Delete Listing"
-                    android:textSize="14sp"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="14dp"
+                    android:text="🗑   DELETE LISTING"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     style="@style/Widget.BookLoop.Button.Danger" />
 
             </LinearLayout>

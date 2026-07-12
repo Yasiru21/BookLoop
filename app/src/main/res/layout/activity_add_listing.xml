@@ -71,20 +71,23 @@
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
+                    <!-- Image picker container: uses surface_variant which auto-adapts in dark mode -->
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:layout_marginTop="12dp"
-                        android:background="@drawable/bg_image_picker">
+                        android:background="@color/surface_variant"
+                        android:clipToOutline="true">
 
+                        <!-- Selected book cover image (empty until user picks one) -->
                         <ImageView
                             android:id="@+id/ivBookCover"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop"
-                            android:src="@drawable/ic_book_placeholder"
                             android:contentDescription="Book cover" />
 
+                        <!-- Hint overlay: camera emoji + label, hidden once image is set -->
                         <LinearLayout
                             android:id="@+id/tvImageHint"
                             android:layout_width="wrap_content"
@@ -193,7 +196,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
                         android:layout_marginTop="4dp"
-                        android:background="@drawable/bg_card"
+                        android:background="@color/surface_variant"
                         android:padding="12dp" />
 
                 </LinearLayout>
@@ -242,10 +245,12 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnGetAiSuggestion"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
+                        android:layout_height="52dp"
                         android:layout_marginTop="12dp"
-                        android:text="🤖 Get AI Price Suggestion"
+                        android:text="🤖  Get AI Price Suggestion"
                         android:textSize="14sp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         style="@style/Widget.BookLoop.Button.Outline" />
 
                     <!-- AI Progress -->
@@ -256,7 +261,7 @@
                         android:layout_gravity="center"
                         android:layout_marginTop="8dp"
                         android:visibility="gone"
-                        android:indeterminateTint="@color/primary" />
+                        android:indeterminateTint="@color/primary_light" />
 
                     <!-- AI Result -->
                     <TextView
@@ -329,7 +334,7 @@
                 android:layout_height="8dp"
                 android:layout_marginTop="12dp"
                 android:visibility="gone"
-                android:progressTint="@color/primary"
+                android:progressTint="@color/primary_light"
                 android:max="100" />
 
             <!-- Publish Button -->

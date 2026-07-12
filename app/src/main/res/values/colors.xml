@@ -1,40 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary Brand Colors -->
+    <!-- ── Primary Brand ─────────────────────────────────── -->
     <color name="primary">#1E3A8A</color>
     <color name="primary_dark">#172554</color>
-    <color name="primary_light">#1D4ED8</color>
-    <color name="accent">#0369A1</color>
-    <color name="accent_dark">#075985</color>
+    <color name="primary_light">#3B5FC4</color>
+    <color name="primary_surface">#EEF2FF</color>
 
-    <!-- Background Colors -->
-    <color name="background">#F1F5F9</color>
+    <!-- ── Accent / CTA ──────────────────────────────────── -->
+    <color name="accent">#F59E0B</color>
+    <color name="accent_dark">#D97706</color>
+    <color name="accent_surface">#FFFBEB</color>
+
+    <!-- ── Backgrounds ───────────────────────────────────── -->
+    <color name="background">#F8FAFF</color>
     <color name="surface">#FFFFFF</color>
-    <color name="surface_variant">#F8FAFC</color>
+    <color name="surface_variant">#F1F5FF</color>
 
-    <!-- Text Colors -->
-    <color name="text_primary">#1E293B</color>
-    <color name="text_secondary">#64748B</color>
-    <color name="text_hint">#94A3B8</color>
+    <!-- ── Text ──────────────────────────────────────────── -->
+    <color name="text_primary">#0F1729</color>
+    <color name="text_secondary">#5A6A8A</color>
+    <color name="text_hint">#A0AABB</color>
     <color name="text_on_primary">#FFFFFF</color>
 
-    <!-- Condition Badge Colors -->
+    <!-- ── Condition Badges ──────────────────────────────── -->
     <color name="condition_excellent">#059669</color>
     <color name="condition_good">#2563EB</color>
     <color name="condition_fair">#D97706</color>
     <color name="condition_poor">#DC2626</color>
 
-    <!-- Status Badge Colors -->
+    <!-- ── Status Badges ─────────────────────────────────── -->
     <color name="status_available">#059669</color>
     <color name="status_reserved">#7C3AED</color>
     <color name="status_sold">#6B7280</color>
 
-    <!-- Other -->
-    <color name="divider">#E2E8F0</color>
-    <color name="card_elevation_shadow">#1A000000</color>
+    <!-- ── UI Utility ────────────────────────────────────── -->
+    <color name="divider">#E8EDF7</color>
+    <color name="card_stroke">#E8EDF7</color>
     <color name="overlay_dark">#80000000</color>
     <color name="ai_bg">#EFF6FF</color>
     <color name="ai_border">#BFDBFE</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="success">#059669</color>
+    <color name="error">#DC2626</color>
+    <color name="nav_bar_bg">#FFFFFF</color>
+    <color name="nav_active">#1E3A8A</color>
+    <color name="nav_inactive">#A0AABB</color>
 </resources>

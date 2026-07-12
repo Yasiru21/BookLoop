@@ -23,7 +23,7 @@ import com.bookloop.app.BuildConfig;
 public class GeminiHelper {
 
     private static final String TAG = "GeminiHelper";
-    private static final String API_KEY = BuildConfig.GEMINI_API_KEY;
+    private static final String API_KEY = BuildConfig.GROQ_API_KEY;
     private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final String MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
 

@@ -129,11 +129,15 @@ public class FirebaseHelper {
                 .orderBy("timestamp", Query.Direction.DESCENDING);
     }
 
-    /** Get query for books belonging to the current seller */
+    /**
+     * Get query for books belonging to the current seller.
+     * NOTE: No orderBy here — combining whereEqualTo + orderBy on different fields
+     * requires a Firestore composite index that must be manually created in the
+     * Firebase Console. Without it the query always fails. We sort client-side instead.
+     */
     public static Query getMyBooksQuery(String sellerId) {
         return db.collection(COLLECTION_BOOKS)
-                .whereEqualTo("sellerId", sellerId)
-                .orderBy("timestamp", Query.Direction.DESCENDING);
+                .whereEqualTo("sellerId", sellerId);
     }
 
     // ─── Storage Operations ──────────────────────────────────────────────────

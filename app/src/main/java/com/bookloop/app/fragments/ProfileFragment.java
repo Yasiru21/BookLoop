@@ -25,7 +25,10 @@ import com.bookloop.app.adapters.BookAdapter;
 import com.bookloop.app.databinding.FragmentProfileBinding;
 import com.bookloop.app.models.Book;
 import com.bookloop.app.utils.FirebaseHelper;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
@@ -102,28 +105,83 @@ public class ProfileFragment extends Fragment {
                 .show();
     }
     
+    /**
+     * Change Password — two-step flow:
+     *  1. Ask for the user's CURRENT password and re-authenticate.
+     *  2. On success, ask for the NEW password and call updatePassword().
+     *
+     * This avoids FirebaseAuthRecentLoginRequiredException which silently fails
+     * when the user's session is not fresh.
+     */
     private void showChangePasswordDialog() {
-        final EditText input = new EditText(requireContext());
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        input.setHint("New Password");
+        final EditText currentPwInput = new EditText(requireContext());
+        currentPwInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        currentPwInput.setHint("Current password");
+        currentPwInput.setPadding(48, 32, 48, 16);
 
         new AlertDialog.Builder(requireContext())
-                .setTitle("Change Password")
-                .setView(input)
-                .setPositiveButton("Update", (dialog, which) -> {
-                    String newPassword = input.getText().toString().trim();
-                    if (newPassword.length() < 6) {
-                        Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                .setTitle("Verify Identity")
+                .setMessage("Enter your current password to continue.")
+                .setView(currentPwInput)
+                .setPositiveButton("Next", (dialog, which) -> {
+                    String currentPw = currentPwInput.getText().toString().trim();
+                    if (currentPw.isEmpty()) {
+                        Toast.makeText(requireContext(), "Please enter your current password", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                        FirebaseAuth.getInstance().getCurrentUser().updatePassword(newPassword)
-                                .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "Password updated successfully!", Toast.LENGTH_SHORT).show())
-                                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to update password: " + e.getMessage(), Toast.LENGTH_LONG).show());
-                    }
+                    promptNewPassword(currentPw);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private void promptNewPassword(String currentPassword) {
+        final EditText newPwInput = new EditText(requireContext());
+        newPwInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        newPwInput.setHint("New password (min 6 characters)");
+        newPwInput.setPadding(48, 32, 48, 16);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("New Password")
+                .setView(newPwInput)
+                .setPositiveButton("Update", (dialog, which) -> {
+                    String newPw = newPwInput.getText().toString().trim();
+                    if (newPw.length() < 6) {
+                        Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    reAuthAndUpdatePassword(currentPassword, newPw);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void reAuthAndUpdatePassword(String currentPassword, String newPassword) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || user.getEmail() == null) {
+            Toast.makeText(requireContext(), "Not signed in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Re-authenticate first — required by Firebase for sensitive operations
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+        user.reauthenticate(credential)
+                .addOnSuccessListener(aVoid -> {
+                    // Now safe to update password
+                    user.updatePassword(newPassword)
+                            .addOnSuccessListener(v -> {
+                                if (isAdded()) Toast.makeText(requireContext(),
+                                        "✅ Password updated successfully!", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                if (isAdded()) Toast.makeText(requireContext(),
+                                        "Failed to update password: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    if (isAdded()) Toast.makeText(requireContext(),
+                            "❌ Current password is incorrect", Toast.LENGTH_SHORT).show();
+                });
     }
 
     @Override
@@ -140,6 +198,9 @@ public class ProfileFragment extends Fragment {
             startActivity(intent);
         });
         binding.rvMyListings.setLayoutManager(new LinearLayoutManager(requireContext()));
+        // Disable RecyclerView's own scrolling — the outer NestedScrollView handles it.
+        // Without this, LinearLayoutManager only measures items that fit on screen.
+        binding.rvMyListings.setNestedScrollingEnabled(false);
         binding.rvMyListings.setAdapter(adapter);
     }
 
@@ -181,6 +242,14 @@ public class ProfileFragment extends Fragment {
                             myBooks.add(book);
                         }
                     }
+
+                    // Sort newest-first client-side (avoids needing a Firestore composite index)
+                    myBooks.sort((a, b) -> {
+                        long tA = (a.getTimestamp() != null) ? a.getTimestamp().toDate().getTime() : 0;
+                        long tB = (b.getTimestamp() != null) ? b.getTimestamp().toDate().getTime() : 0;
+                        return Long.compare(tB, tA); // descending
+                    });
+
                     if (isAdded()) {
                         adapter.notifyDataSetChanged();
                         binding.progressBar.setVisibility(View.GONE);
@@ -200,7 +269,10 @@ public class ProfileFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     if (isAdded()) {
                         binding.progressBar.setVisibility(View.GONE);
-                        Toast.makeText(requireContext(), "Failed to load your listings", Toast.LENGTH_SHORT).show();
+                        android.util.Log.e("ProfileFragment", "loadMyListings failed: " + e.getMessage(), e);
+                        Toast.makeText(requireContext(),
+                                "Could not load listings: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }

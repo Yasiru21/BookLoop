@@ -20,6 +20,14 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Apply the user's saved theme BEFORE setContentView to avoid a flash
+        android.content.SharedPreferences prefs =
+                getSharedPreferences("BookLoopPrefs", android.content.Context.MODE_PRIVATE);
+        int savedTheme = prefs.getInt("theme_mode",
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(savedTheme);
+
         setContentView(R.layout.activity_splash);
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {

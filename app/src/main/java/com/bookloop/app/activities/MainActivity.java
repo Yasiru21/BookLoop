@@ -11,6 +11,7 @@ import com.bookloop.app.databinding.ActivityMainBinding;
 import com.bookloop.app.fragments.HomeFragment;
 import com.bookloop.app.fragments.ProfileFragment;
 import com.bookloop.app.fragments.SearchFragment;
+import com.bookloop.app.utils.DataSeeder;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Populate Firestore with demo listings on first launch (runs only once)
+        DataSeeder.seedIfNeeded(this);
 
         setupBottomNav();
         

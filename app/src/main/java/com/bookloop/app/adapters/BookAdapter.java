@@ -66,38 +66,44 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         }
 
         void bind(Book book) {
-            tvTitle.setText(book.getTitle());
-            tvSubject.setText(book.getSubject());
+            // ── Text fields — null-safe ──────────────────────────────────────
+            tvTitle.setText(book.getTitle() != null ? book.getTitle() : "Untitled");
+            tvSubject.setText(book.getSubject() != null ? book.getSubject() : "");
             tvEdition.setText(book.getEdition() != null && !book.getEdition().isEmpty()
                     ? book.getEdition() : "");
-            tvCondition.setText(book.getCondition());
             tvSellingPrice.setText("Rs. " + String.format("%.0f", book.getSellingPrice()));
-            tvSellerName.setText("by " + book.getSellerName());
+            tvSellerName.setText("by " + (book.getSellerName() != null ? book.getSellerName() : "—"));
 
-            // Status badge
-            String status = book.getStatus() != null ? book.getStatus() : "available";
+            // ── Status badge ─────────────────────────────────────────────────
+            // Guard against null OR empty string — both would crash substring()
+            String status = (book.getStatus() != null && !book.getStatus().isEmpty())
+                    ? book.getStatus() : "available";
             tvStatus.setText(status.substring(0, 1).toUpperCase() + status.substring(1));
 
-            // Condition badge color
+            // ── Condition badge — switch on null throws NPE in Java ───────────
+            String condition = (book.getCondition() != null && !book.getCondition().isEmpty())
+                    ? book.getCondition() : "Poor";
+            tvCondition.setText(condition);
+
             int condBg;
-            switch (book.getCondition()) {
+            switch (condition) {
                 case "Excellent": condBg = R.drawable.badge_excellent; break;
-                case "Good":      condBg = R.drawable.badge_good; break;
-                case "Fair":      condBg = R.drawable.badge_fair; break;
-                default:          condBg = R.drawable.badge_poor; break;
+                case "Good":      condBg = R.drawable.badge_good;      break;
+                case "Fair":      condBg = R.drawable.badge_fair;      break;
+                default:          condBg = R.drawable.badge_poor;      break;
             }
             tvCondition.setBackgroundResource(condBg);
 
-            // Status badge color
+            // ── Status badge colour ──────────────────────────────────────────
             int statusBg;
             switch (status) {
                 case "reserved": statusBg = R.drawable.badge_reserved; break;
-                case "sold":     statusBg = R.drawable.badge_sold; break;
+                case "sold":     statusBg = R.drawable.badge_sold;     break;
                 default:         statusBg = R.drawable.badge_available; break;
             }
             tvStatus.setBackgroundResource(statusBg);
 
-            // Book cover image
+            // ── Book cover image ─────────────────────────────────────────────
             if (book.getImageUrl() != null && !book.getImageUrl().isEmpty()) {
                 Glide.with(itemView.getContext())
                         .load(book.getImageUrl())

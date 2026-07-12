@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ic_logo.xml
+    Purpose: In-app logo for splash screen, cards, etc. — shown on a WHITE background.
+    Colors: Indigo + Amber (both visible on white).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- ── Left book page (indigo) ─────────────────────────── -->
+    <path
+        android:fillColor="#1E3A8A"
+        android:pathData="M54,43 Q34,38 26,44 L26,66 Q34,71 54,65 Z" />
+
+    <!-- ── Right book page (amber) ─────────────────────────── -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M54,43 Q74,38 82,44 L82,66 Q74,71 54,65 Z" />
+
+    <!-- ── Spine divider ────────────────────────────────────── -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#3B5FC4"
+        android:strokeWidth="2"
+        android:pathData="M54,43 L54,65" />
+
+    <!-- ── Top exchange arrow (indigo curved arc) ──────────── -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1E3A8A"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M32,38 Q54,18 76,38" />
+    <!-- Arrowhead at right end of top arc -->
+    <path
+        android:fillColor="#1E3A8A"
+        android:pathData="M72,30 L80,38 L70,42 Z" />
+
+    <!-- ── Bottom exchange arrow (amber curved arc) ─────────── -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F59E0B"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M76,70 Q54,90 32,70" />
+    <!-- Arrowhead at left end of bottom arc -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M36,78 L28,70 L38,66 Z" />
+
+</vector>

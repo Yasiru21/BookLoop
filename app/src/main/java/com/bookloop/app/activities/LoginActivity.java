@@ -19,6 +19,14 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Apply the user's saved theme BEFORE inflating so Login screen matches the chosen theme
+        android.content.SharedPreferences prefs =
+                getSharedPreferences("BookLoopPrefs", android.content.Context.MODE_PRIVATE);
+        int savedTheme = prefs.getInt("theme_mode",
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(savedTheme);
+
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
