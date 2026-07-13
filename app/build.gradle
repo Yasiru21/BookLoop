@@ -63,7 +63,7 @@ dependencies {
     // Circular ImageView
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
-    // OkHttp for Gemini API REST calls
+    // OkHttp for Groq API REST calls
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 
     // Gson for JSON parsing

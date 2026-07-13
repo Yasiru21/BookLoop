@@ -25,7 +25,7 @@ import com.bookloop.app.databinding.ActivityAddListingBinding;
 import com.bookloop.app.models.AppUser;
 import com.bookloop.app.models.Book;
 import com.bookloop.app.utils.FirebaseHelper;
-import com.bookloop.app.utils.GeminiHelper;
+import com.bookloop.app.utils.GroqHelper;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
@@ -225,8 +225,8 @@ public class AddListingActivity extends AppCompatActivity {
         setAiLoading(true);
         binding.tvAiResult.setVisibility(View.GONE);
 
-        GeminiHelper.getPriceSuggestion(selectedBitmap, originalPrice, edition, subject, condition,
-                new GeminiHelper.GeminiCallback() {
+        GroqHelper.getPriceSuggestion(selectedBitmap, originalPrice, edition, subject, condition,
+                new GroqHelper.GroqCallback() {
                     @Override
                     public void onSuccess(String result) {
                         runOnUiThread(() -> {

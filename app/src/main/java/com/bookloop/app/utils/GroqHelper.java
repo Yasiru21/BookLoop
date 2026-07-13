@@ -20,14 +20,23 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import com.bookloop.app.BuildConfig;
 
-public class GeminiHelper {
+/**
+ * GroqHelper — Handles AI-powered textbook price suggestions via the Groq API.
+ *
+ * Uses the OpenAI-compatible Groq endpoint with the multimodal
+ * Meta Llama 4 Scout (17B Instruct) model to analyse a book cover image
+ * together with seller-provided metadata and return a recommended resale
+ * price range in Sri Lankan Rupees.
+ */
+public class GroqHelper {
 
-    private static final String TAG = "GeminiHelper";
+    private static final String TAG     = "GroqHelper";
     private static final String API_KEY = BuildConfig.GROQ_API_KEY;
     private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
+    private static final String MODEL   = "meta-llama/llama-4-scout-17b-16e-instruct";
 
-    public interface GeminiCallback {
+    /** Callback interface for the asynchronous Groq API call. */
+    public interface GroqCallback {
         void onSuccess(String result);
         void onError(String errorMessage);
     }
@@ -38,13 +47,24 @@ public class GeminiHelper {
             .writeTimeout(30, TimeUnit.SECONDS)
             .build();
 
+    /**
+     * Request a price suggestion from the Groq multimodal model.
+     *
+     * @param bookImage     Bitmap of the textbook cover (used for visual condition assessment)
+     * @param originalPrice Original purchase price entered by the seller
+     * @param edition       Book edition string
+     * @param subject       Subject / module name
+     * @param condition     Seller's self-assessed condition ("Excellent", "Good", "Fair", "Poor")
+     * @param callback      Delivers the AI response text or an error message
+     */
     public static void getPriceSuggestion(Bitmap bookImage,
                                           String originalPrice,
                                           String edition,
                                           String subject,
                                           String condition,
-                                          GeminiCallback callback) {
+                                          GroqCallback callback) {
 
+        // Encode image as Base64 for the multimodal message payload
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bookImage.compress(Bitmap.CompressFormat.JPEG, 75, baos);
         String base64Image = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
@@ -65,7 +85,7 @@ public class GeminiHelper {
                 + "PRICE RANGE: Rs. [minimum] - Rs. [maximum]";
 
         try {
-            // Build image content
+            // ── Build multimodal message (image + text) ─────────────────────
             JSONObject imageUrl = new JSONObject();
             imageUrl.put("url", "data:image/jpeg;base64," + base64Image);
 
@@ -73,12 +93,10 @@ public class GeminiHelper {
             imageContent.put("type", "image_url");
             imageContent.put("image_url", imageUrl);
 
-            // Build text content
             JSONObject textContent = new JSONObject();
             textContent.put("type", "text");
             textContent.put("text", textPrompt);
 
-            // Combine into message
             JSONArray contentArray = new JSONArray();
             contentArray.put(imageContent);
             contentArray.put(textContent);
@@ -90,7 +108,7 @@ public class GeminiHelper {
             JSONArray messages = new JSONArray();
             messages.put(userMessage);
 
-            // Build request body
+            // ── Build HTTP request ──────────────────────────────────────────
             JSONObject requestJson = new JSONObject();
             requestJson.put("model", MODEL);
             requestJson.put("messages", messages);
@@ -106,6 +124,7 @@ public class GeminiHelper {
                             MediaType.parse("application/json; charset=utf-8")))
                     .build();
 
+            // ── Execute asynchronously ──────────────────────────────────────
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
